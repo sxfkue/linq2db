@@ -218,7 +218,7 @@ namespace Tests.ComplexTests2
 			var ms = SetMappings();
 			InsertData();
 
-			using (var db = new TestDataConnection(context, ms))
+			using (var db = GetDataContext(context, ms))
 			{
 				var data =  db.GetTable<Animal>().ToList();
 				Assert.Null(((Dog)data.First()).Bla);
@@ -231,7 +231,7 @@ namespace Tests.ComplexTests2
 			var ms = SetMappings();
 			InsertData();
 
-			using (var db = new TestDataConnection(context, ms))
+			using (var db = GetDataContext(context, ms))
 			{
 				var data = db.GetTable<Animal>().LoadWith(x => ((Dog)x).Bla).ToList();
 				Assert.NotNull(((Dog)data.First()).Bla);
@@ -244,7 +244,7 @@ namespace Tests.ComplexTests2
 			var ms = SetMappings();
 			InsertData();
 
-			using (var db = new TestDataConnection(context, ms))
+			using (var db = GetDataContext(context, ms))
 			{
 				var data = db.GetTable<Test>().LoadWith(x => ((Dog)x.TestAnimal).Bla).ToList();
 
@@ -261,7 +261,7 @@ namespace Tests.ComplexTests2
 			var ms = SetMappings();
 			InsertData();
 
-			using (var db = new TestDataConnection(context, ms))
+			using (var db = GetDataContext(context, ms))
 			{
 				var data = db.GetTable<Dog>().ToList();
 
@@ -276,7 +276,7 @@ namespace Tests.ComplexTests2
 			var ms = SetMappings();
 			InsertData();
 
-			using (var db = new TestDataConnection(context, ms))
+			using (var db = GetDataContext(context, ms))
 			{
 				var d = new Dog() { AnimalType = AnimalType.Big, AnimalType2 = AnimalType2.Big };
 
@@ -289,7 +289,6 @@ namespace Tests.ComplexTests2
 				var test6 = db.GetTable<Animal>().First(x => x is SuperWildAnimal);
 
 				var test7 = db.GetTable<Test>().First(x => x.TestAnimal is Dog && ((Dog)x.TestAnimal).EyeId == 1);
-				var sql = db.LastQuery;
 			}
 		}
 
@@ -299,7 +298,7 @@ namespace Tests.ComplexTests2
 			var ms = SetMappings();
 			InsertData();
 
-			using (var db = new TestDataConnection(context, ms))
+			using (var db = GetDataContext(context, ms))
 			{
 				var dog = db.GetTable<Dog>().First();
 				db.Update(dog);
