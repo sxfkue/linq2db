@@ -26,6 +26,10 @@ namespace Tests.Model
 		{
 		}
 
+		public TestDataConnection(MappingSchema ms) : base(ms)
+		{
+		}
+
 		static object _sync = new object();
 
 		[Table("AllTypes")]

@@ -155,23 +155,24 @@ namespace Tests.ComplexTests2
 			}
 		}
 
-		private void SetMappings()
+		private MappingSchema SetMappings()
 		{
-			MappingSchema.Default.SetConverter<AnimalType, string>((obj) =>
+			var ms = new MappingSchema();
+			ms.SetConverter<AnimalType, string>((obj) =>
 			{
 				return obj.ToString();
 			});
-			MappingSchema.Default.SetConverter<AnimalType, DataParameter>((obj) =>
+			ms.SetConverter<AnimalType, DataParameter>((obj) =>
 			{
 				return new DataParameter { Value = obj.ToString() };
 			});
-			MappingSchema.Default.SetConverter<string, AnimalType>((txt) =>
+			ms.SetConverter<string, AnimalType>((txt) =>
 			{
 				return (AnimalType)Enum.Parse(typeof(AnimalType), txt, true);
 			});
-			MappingSchema.Default.SetDefaultFromEnumType(typeof(AnimalType2), typeof(string));
+			ms.SetDefaultFromEnumType(typeof(AnimalType2), typeof(string));
 
-			var mappingBuilder = MappingSchema.Default.GetFluentMappingBuilder();
+			var mappingBuilder = ms.GetFluentMappingBuilder();
 			mappingBuilder.Entity<Animal>()
 				.HasTableName("Animals")
 				.Inheritance(x => x.Discriminator, "Dog", typeof(Dog))
@@ -207,15 +208,17 @@ namespace Tests.ComplexTests2
 				.Association(x => x.TestAnimal, x => x.TestAnimalId, x => x.Id)
 				.Property(x => x.TestAnimalId).IsColumn().IsNullable().HasColumnName("TestAnimalId")
 				.Property(x => x.TestAnimal).IsNotColumn();
+
+			return ms;
 		}
 
 		[Test]
 		public void Test1()
 		{
-			SetMappings();
+			var ms = SetMappings();
 			InsertData();
 
-			using (var db = new TestDataConnection())
+			using (var db = new TestDataConnection(ms))
 			{
 				var data =  db.GetTable<Animal>().ToList();
 				Assert.Null(((Dog)data.First()).Bla);
@@ -225,10 +228,10 @@ namespace Tests.ComplexTests2
 		[Test]
 		private void Test2()
 		{
-			SetMappings();
+			var ms = SetMappings();
 			InsertData();
 
-			using (var db = new TestDataConnection())
+			using (var db = new TestDataConnection(ms))
 			{
 				var data = db.GetTable<Animal>().LoadWith(x => ((Dog)x).Bla).ToList();
 				Assert.NotNull(((Dog)data.First()).Bla);
@@ -238,10 +241,10 @@ namespace Tests.ComplexTests2
 		[Test]
 		public void Test3()
 		{
-			SetMappings();
+			var ms = SetMappings();
 			InsertData();
 
-			using (var db = new TestDataConnection())
+			using (var db = new TestDataConnection(ms))
 			{
 				var data = db.GetTable<Test>().LoadWith(x => ((Dog)x.TestAnimal).Bla).ToList();
 
@@ -255,10 +258,10 @@ namespace Tests.ComplexTests2
 		[Test]
 		private void Test4()
 		{
-			SetMappings();
+			var ms = SetMappings();
 			InsertData();
 
-			using (var db = new TestDataConnection())
+			using (var db = new TestDataConnection(ms))
 			{
 				var data = db.GetTable<Dog>().ToList();
 
@@ -270,10 +273,10 @@ namespace Tests.ComplexTests2
 		[Test]
 		public void Test5()
 		{
-			SetMappings();
+			var ms = SetMappings();
 			InsertData();
 
-			using (var db = new TestDataConnection())
+			using (var db = new TestDataConnection(ms))
 			{
 				var d = new Dog() { AnimalType = AnimalType.Big, AnimalType2 = AnimalType2.Big };
 
@@ -293,10 +296,10 @@ namespace Tests.ComplexTests2
 		[Test]
 		public void Test6()
 		{
-			SetMappings();
+			var ms = SetMappings();
 			InsertData();
 
-			using (var db = new TestDataConnection())
+			using (var db = new TestDataConnection(ms))
 			{
 				var dog = db.GetTable<Dog>().First();
 				db.Update(dog);
