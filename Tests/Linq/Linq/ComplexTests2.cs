@@ -210,10 +210,10 @@ namespace Tests.ComplexTests2
 		public void TestQueryForBaseType(string context)
 		{
 			var ms = SetMappings();
-			InsertData();
 
 			using (var db = GetDataContext(context, ms))
 			{
+				InsertData(db);
 				var data =  db.GetTable<Animal>().ToList();
 				Assert.Null(((Dog)data.First()).Bla);
 			}
