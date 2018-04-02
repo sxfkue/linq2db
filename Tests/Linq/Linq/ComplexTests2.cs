@@ -105,7 +105,7 @@ namespace Tests.ComplexTests2
 			public Animal TestAnimal { get; set; }
 		}
 
-		private void InsertData()
+		private void InsertData(ITestDataContext db)
 		{
 			var eye = new Eye
 			{
@@ -136,23 +136,17 @@ namespace Tests.ComplexTests2
 				TestAnimalId = 1
 			};
 
-			using (var db = new TestDataConnection())
-			{
-				db.DropTable<Animal>(throwExceptionIfNotExists: false);
-				db.DropTable<Eye>(throwExceptionIfNotExists: false);
-				db.DropTable<Test>(throwExceptionIfNotExists: false);
-				db.CreateTable<Animal>();
-				db.CreateTable<Eye>();
-				db.CreateTable<Test>();
-			}
+			db.DropTable<Animal>(throwExceptionIfNotExists: false);
+			db.DropTable<Eye>(throwExceptionIfNotExists: false);
+			db.DropTable<Test>(throwExceptionIfNotExists: false);
+			db.CreateTable<Animal>();
+			db.CreateTable<Eye>();
+			db.CreateTable<Test>();
 
-			using (var db = new TestDataConnection())
-			{
-				db.Insert(eye);
-				db.Insert(dog);
-				db.Insert(test);
-				db.Insert(test2);
-			}
+			db.Insert(eye);
+			db.Insert(dog);
+			db.Insert(test);
+			db.Insert(test2);
 		}
 
 		private MappingSchema SetMappings()
@@ -229,10 +223,9 @@ namespace Tests.ComplexTests2
 		private void TestLoadWithWithCast(string context)
 		{
 			var ms = SetMappings();
-			InsertData();
-
 			using (var db = GetDataContext(context, ms))
 			{
+				InsertData(db);
 				var data = db.GetTable<Animal>().LoadWith(x => ((Dog)x).Bla).ToList();
 				Assert.NotNull(((Dog)data.First()).Bla);
 			}
@@ -242,10 +235,9 @@ namespace Tests.ComplexTests2
 		public void TestNestedLoadWithWithCast(string context)
 		{
 			var ms = SetMappings();
-			InsertData();
-
 			using (var db = GetDataContext(context, ms))
 			{
+				InsertData(db);
 				var data = db.GetTable<Test>().LoadWith(x => ((Dog)x.TestAnimal).Bla).ToList();
 
 				Assert.Null(data.First().TestAnimal);
@@ -259,10 +251,9 @@ namespace Tests.ComplexTests2
 		private void TestComplexPropertyLoading(string context)
 		{
 			var ms = SetMappings();
-			InsertData();
-
 			using (var db = GetDataContext(context, ms))
 			{
+				InsertData(db);
 				var data = db.GetTable<Dog>().ToList();
 
 				Assert.NotNull(data[0].DogName.First);
@@ -274,10 +265,9 @@ namespace Tests.ComplexTests2
 		public void TestStringAndConverterEnums(string context)
 		{
 			var ms = SetMappings();
-			InsertData();
-
 			using (var db = GetDataContext(context, ms))
 			{
+				InsertData(db);
 				var d = new Dog() { AnimalType = AnimalType.Big, AnimalType2 = AnimalType2.Big };
 
 				var test1 = db.GetTable<Dog>().First(x => x.AnimalType == AnimalType.Big);
@@ -296,10 +286,9 @@ namespace Tests.ComplexTests2
 		public void TestUpdateWithTypeAndBasetype(string context)
 		{
 			var ms = SetMappings();
-			InsertData();
-
 			using (var db = GetDataContext(context, ms))
 			{
+				InsertData(db);
 				var dog = db.GetTable<Dog>().First();
 				db.Update(dog);
 				db.Update((Animal)dog);
