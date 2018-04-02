@@ -212,39 +212,39 @@ namespace Tests.ComplexTests2
 			return ms;
 		}
 
-		[Test]
-		public void Test1()
+		[Test, DataContextSource]
+		public void Test1(string context)
 		{
 			var ms = SetMappings();
 			InsertData();
 
-			using (var db = new TestDataConnection(ms))
+			using (var db = new TestDataConnection(context, ms))
 			{
 				var data =  db.GetTable<Animal>().ToList();
 				Assert.Null(((Dog)data.First()).Bla);
 			}
 		}
 
-		[Test]
-		private void Test2()
+		[Test, DataContextSource]
+		private void Test2(string context)
 		{
 			var ms = SetMappings();
 			InsertData();
 
-			using (var db = new TestDataConnection(ms))
+			using (var db = new TestDataConnection(context, ms))
 			{
 				var data = db.GetTable<Animal>().LoadWith(x => ((Dog)x).Bla).ToList();
 				Assert.NotNull(((Dog)data.First()).Bla);
 			}
 		}
 
-		[Test]
-		public void Test3()
+		[Test, DataContextSource]
+		public void Test3(string context)
 		{
 			var ms = SetMappings();
 			InsertData();
 
-			using (var db = new TestDataConnection(ms))
+			using (var db = new TestDataConnection(context, ms))
 			{
 				var data = db.GetTable<Test>().LoadWith(x => ((Dog)x.TestAnimal).Bla).ToList();
 
@@ -255,13 +255,13 @@ namespace Tests.ComplexTests2
 			}
 		}
 
-		[Test]
-		private void Test4()
+		[Test, DataContextSource]
+		private void Test4(string context)
 		{
 			var ms = SetMappings();
 			InsertData();
 
-			using (var db = new TestDataConnection(ms))
+			using (var db = new TestDataConnection(context, ms))
 			{
 				var data = db.GetTable<Dog>().ToList();
 
@@ -270,13 +270,13 @@ namespace Tests.ComplexTests2
 			}
 		}
 
-		[Test]
-		public void Test5()
+		[Test, DataContextSource]
+		public void Test5(string context)
 		{
 			var ms = SetMappings();
 			InsertData();
 
-			using (var db = new TestDataConnection(ms))
+			using (var db = new TestDataConnection(context, ms))
 			{
 				var d = new Dog() { AnimalType = AnimalType.Big, AnimalType2 = AnimalType2.Big };
 
@@ -293,13 +293,13 @@ namespace Tests.ComplexTests2
 			}
 		}
 
-		[Test]
-		public void Test6()
+		[Test, DataContextSource]
+		public void Test6(string context)
 		{
 			var ms = SetMappings();
 			InsertData();
 
-			using (var db = new TestDataConnection(ms))
+			using (var db = new TestDataConnection(context, ms))
 			{
 				var dog = db.GetTable<Dog>().First();
 				db.Update(dog);

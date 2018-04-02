@@ -26,7 +26,7 @@ namespace Tests.Model
 		{
 		}
 
-		public TestDataConnection(MappingSchema ms) : base(ms)
+		public TestDataConnection(string configString, MappingSchema ms) : base(configString, ms)
 		{
 		}
 
