@@ -213,7 +213,7 @@ namespace Tests.ComplexTests2
 		}
 
 		[Test, DataContextSource]
-		public void Test1(string context)
+		public void TestQueryForBaseType(string context)
 		{
 			var ms = SetMappings();
 			InsertData();
@@ -226,7 +226,7 @@ namespace Tests.ComplexTests2
 		}
 
 		[Test, DataContextSource]
-		private void Test2(string context)
+		private void TestLoadWithWithCast(string context)
 		{
 			var ms = SetMappings();
 			InsertData();
@@ -239,7 +239,7 @@ namespace Tests.ComplexTests2
 		}
 
 		[Test, DataContextSource]
-		public void Test3(string context)
+		public void TestNestedLoadWithWithCast(string context)
 		{
 			var ms = SetMappings();
 			InsertData();
@@ -256,7 +256,7 @@ namespace Tests.ComplexTests2
 		}
 
 		[Test, DataContextSource]
-		private void Test4(string context)
+		private void TestComplexPropertyLoading(string context)
 		{
 			var ms = SetMappings();
 			InsertData();
@@ -271,7 +271,7 @@ namespace Tests.ComplexTests2
 		}
 
 		[Test, DataContextSource]
-		public void Test5(string context)
+		public void TestStringAndConverterEnums(string context)
 		{
 			var ms = SetMappings();
 			InsertData();
@@ -293,7 +293,7 @@ namespace Tests.ComplexTests2
 		}
 
 		[Test, DataContextSource]
-		public void Test6(string context)
+		public void TestUpdateWithTypeAndBasetype(string context)
 		{
 			var ms = SetMappings();
 			InsertData();
