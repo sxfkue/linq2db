@@ -267,6 +267,37 @@ namespace Tests.Linq
 			}
 		}
 
+#if !NETSTANDARD1_6 && !NETSTANDARD2_0
+
+		[System.Data.SQLite.SQLiteFunction(Name = "REGEXP", Arguments = 2, FuncType = System.Data.SQLite.FunctionType.Scalar)]
+		class RegExpFunction : System.Data.SQLite.SQLiteFunction
+		{
+			public override object Invoke(object[] args)
+			{
+				return System.Text.RegularExpressions.Regex.IsMatch(Convert.ToString(args[1]), Convert.ToString(args[0]));
+			}
+		}
+
+		[Test, IncludeDataContextSource(TestProvName.NorthwindSQLite), Category("Regex")]
+		public void Regex(string context)
+		{
+			using (var db = new NorthwindDB(context))
+			{
+				((System.Data.SQLite.SQLiteConnection)db.Connection).BindFunction((System.Data.SQLite.SQLiteFunctionAttribute)typeof(RegExpFunction).GetCustomAttributes(typeof(System.Data.SQLite.SQLiteFunctionAttribute), true).First(), new RegExpFunction());
+
+				var q =
+					from t in db.Category
+					where Sql.RegExp(t.CategoryName, "Condim.*")
+					select t;
+
+				var list = q.ToList();
+
+				Assert.That(list.Count, Is.GreaterThan(0));
+			}
+		}
+
+#endif
+
 		[Test, IncludeDataContextSource(TestProvName.Northwind)]
 		public void WithUpdateLock(string context)
 		{
