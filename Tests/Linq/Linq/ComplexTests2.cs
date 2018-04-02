@@ -138,9 +138,9 @@ namespace Tests.ComplexTests2
 
 			using (var db = new TestDataConnection())
 			{
-				db.DropTable<Animal>();
-				db.DropTable<Eye>();
-				db.DropTable<Test>();
+				db.DropTable<Animal>(throwExceptionIfNotExists: false);
+				db.DropTable<Eye>(throwExceptionIfNotExists: false);
+				db.DropTable<Test>(throwExceptionIfNotExists: false);
 				db.CreateTable<Animal>();
 				db.CreateTable<Eye>();
 				db.CreateTable<Test>();
