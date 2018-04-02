@@ -3,7 +3,6 @@ using LinqToDB.Data;
 using LinqToDB.Mapping;
 using NUnit.Framework;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using Tests.Model;
 
@@ -106,37 +105,6 @@ namespace Tests.ComplexTests2
 			public Animal TestAnimal { get; set; }
 		}
 
-		[Test]
-		public void TestIssue()
-		{
-			SetMappings();
-
-			InsertData();
-
-			var listTest = LoadTest();
-
-			Assert.Null(((Dog)listTest.First()).Bla);
-
-			var listTest2 = LoadTest2();
-
-			Assert.NotNull(((Dog)listTest2.First()).Bla);
-
-			var listTest3 = LoadTest3();
-
-			Assert.Null(listTest3.First().TestAnimal);
-			Assert.NotNull(((Dog)listTest3.Skip(1).First().TestAnimal).Bla);
-			Assert.NotNull(((Dog)listTest3.Skip(1).First().TestAnimal).DogName.First);
-			Assert.NotNull(((Dog)listTest3.Skip(1).First().TestAnimal).DogName.Second);
-
-			var listTest4 = LoadTest4();
-			Assert.NotNull(listTest4[0].DogName.First);
-			Assert.NotNull(listTest4[0].DogName.Second);
-
-			LoadTest5();
-
-			Test6();
-		}
-
 		private void InsertData()
 		{
 			var eye = new Eye
@@ -170,86 +138,20 @@ namespace Tests.ComplexTests2
 
 			using (var db = new TestDataConnection())
 			{
-				db.SetCommand("DROP TABLE IF EXISTS `Animals`").Execute();
-				db.SetCommand("DROP TABLE IF EXISTS `Eyes`").Execute();
-				db.SetCommand("DROP TABLE IF EXISTS `Test`").Execute();
-				db.SetCommand("CREATE TABLE `Animals` ( `Id` INTEGER NOT NULL PRIMARY KEY, `AnimalType` TEXT, `AnimalType2` TEXT, `Name` TEXT, `Discriminator` TEXT, `EyeId` INTEGER, `First` TEXT, `Second` TEXT )").Execute();
-				db.SetCommand("CREATE TABLE `Eyes` ( `Id` INTEGER NOT NULL PRIMARY KEY, `Xy` TEXT )").Execute();
-				db.SetCommand("CREATE TABLE `Test` ( `Id` INTEGER NOT NULL PRIMARY KEY, `TestAnimalId` INTEGER NULL )").Execute();
+				db.DropTable<Animal>();
+				db.DropTable<Eye>();
+				db.DropTable<Test>();
+				db.CreateTable<Animal>();
+				db.CreateTable<Eye>();
+				db.CreateTable<Test>();
 			}
 
 			using (var db = new TestDataConnection())
 			{
-				db.GetTable<Eye>().Delete();
-				db.GetTable<Animal>().Delete();
-
 				db.Insert(eye);
 				db.Insert(dog);
 				db.Insert(test);
 				db.Insert(test2);
-			}
-		}
-
-		private List<Animal> LoadTest()
-		{
-			using (var db = new TestDataConnection())
-			{
-				return db.GetTable<Animal>().ToList();
-			}
-		}
-
-		private List<Animal> LoadTest2()
-		{
-			using (var db = new TestDataConnection())
-			{
-				return db.GetTable<Animal>().LoadWith(x => ((Dog)x).Bla).ToList();
-			}
-		}
-
-		private List<Test> LoadTest3()
-		{
-			using (var db = new TestDataConnection())
-			{
-				return db.GetTable<Test>().LoadWith(x => ((Dog)x.TestAnimal).Bla).ToList();
-			}
-		}
-
-		private List<Dog> LoadTest4()
-		{
-			using (var db = new TestDataConnection())
-			{
-				return db.GetTable<Dog>().ToList();
-			}
-		}
-		private void LoadTest5()
-		{
-			using (var db = new TestDataConnection())
-			{
-				var d = new Dog() { AnimalType = AnimalType.Big, AnimalType2 = AnimalType2.Big };
-
-				var test1 = db.GetTable<Dog>().First(x => x.AnimalType == AnimalType.Big);
-				var test2 = db.GetTable<Dog>().First(x => x.AnimalType == d.AnimalType);
-
-				var test3 = db.GetTable<Dog>().First(x => x.AnimalType2 == AnimalType2.Big);
-				var test4 = db.GetTable<Dog>().First(x => x.AnimalType2 == d.AnimalType2);
-
-				var test6 = db.GetTable<Animal>().First(x => x is SuperWildAnimal);
-
-				var test7 = db.GetTable<Test>().First(x => x.TestAnimal is Dog && ((Dog)x.TestAnimal).EyeId == 1);
-				var sql = db.LastQuery;
-			}
-		}
-
-		private void Test6()
-		{
-			using (var db = new TestDataConnection())
-			{
-				var dog = db.GetTable<Dog>().First();
-				db.Update(dog);
-				db.Update((Animal)dog);
-
-				//var bdog = new SuperBadDog();
-				//db.Insert((Dog)bdog);   //this is not possible with my change -> ;-( should it be?
 			}
 		}
 
@@ -305,6 +207,104 @@ namespace Tests.ComplexTests2
 				.Association(x => x.TestAnimal, x => x.TestAnimalId, x => x.Id)
 				.Property(x => x.TestAnimalId).IsColumn().IsNullable().HasColumnName("TestAnimalId")
 				.Property(x => x.TestAnimal).IsNotColumn();
+		}
+
+		[Test]
+		public void Test1()
+		{
+			SetMappings();
+			InsertData();
+
+			using (var db = new TestDataConnection())
+			{
+				var data =  db.GetTable<Animal>().ToList();
+				Assert.Null(((Dog)data.First()).Bla);
+			}
+		}
+
+		[Test]
+		private void Test2()
+		{
+			SetMappings();
+			InsertData();
+
+			using (var db = new TestDataConnection())
+			{
+				var data = db.GetTable<Animal>().LoadWith(x => ((Dog)x).Bla).ToList();
+				Assert.NotNull(((Dog)data.First()).Bla);
+			}
+		}
+
+		[Test]
+		public void Test3()
+		{
+			SetMappings();
+			InsertData();
+
+			using (var db = new TestDataConnection())
+			{
+				var data = db.GetTable<Test>().LoadWith(x => ((Dog)x.TestAnimal).Bla).ToList();
+
+				Assert.Null(data.First().TestAnimal);
+				Assert.NotNull(((Dog)data.Skip(1).First().TestAnimal).Bla);
+				Assert.NotNull(((Dog)data.Skip(1).First().TestAnimal).DogName.First);
+				Assert.NotNull(((Dog)data.Skip(1).First().TestAnimal).DogName.Second);
+			}
+		}
+
+		[Test]
+		private void Test4()
+		{
+			SetMappings();
+			InsertData();
+
+			using (var db = new TestDataConnection())
+			{
+				var data = db.GetTable<Dog>().ToList();
+
+				Assert.NotNull(data[0].DogName.First);
+				Assert.NotNull(data[0].DogName.Second);
+			}
+		}
+
+		[Test]
+		public void Test5()
+		{
+			SetMappings();
+			InsertData();
+
+			using (var db = new TestDataConnection())
+			{
+				var d = new Dog() { AnimalType = AnimalType.Big, AnimalType2 = AnimalType2.Big };
+
+				var test1 = db.GetTable<Dog>().First(x => x.AnimalType == AnimalType.Big);
+				var test2 = db.GetTable<Dog>().First(x => x.AnimalType == d.AnimalType);
+
+				var test3 = db.GetTable<Dog>().First(x => x.AnimalType2 == AnimalType2.Big);
+				var test4 = db.GetTable<Dog>().First(x => x.AnimalType2 == d.AnimalType2);
+
+				var test6 = db.GetTable<Animal>().First(x => x is SuperWildAnimal);
+
+				var test7 = db.GetTable<Test>().First(x => x.TestAnimal is Dog && ((Dog)x.TestAnimal).EyeId == 1);
+				var sql = db.LastQuery;
+			}
+		}
+
+		[Test]
+		public void Test6()
+		{
+			SetMappings();
+			InsertData();
+
+			using (var db = new TestDataConnection())
+			{
+				var dog = db.GetTable<Dog>().First();
+				db.Update(dog);
+				db.Update((Animal)dog);
+
+				//var bdog = new SuperBadDog();
+				//db.Insert((Dog)bdog);   //this is not possible with my change -> ;-( should it be?
+			}
 		}
 	}
 }
