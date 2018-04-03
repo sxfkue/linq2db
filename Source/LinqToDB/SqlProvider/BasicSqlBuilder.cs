@@ -1555,6 +1555,10 @@ namespace LinqToDB.SqlProvider
 					BuildLikePredicate((SqlPredicate.Like)predicate);
 					break;
 
+				case QueryElementType.RegexPredicate:
+					BuildRegexPredicate((SqlPredicate.Regex)predicate);
+					break;
+
 				case QueryElementType.BetweenPredicate:
 					{
 						BuildExpression(GetPrecedence((SqlPredicate.Between)predicate), ((SqlPredicate.Between)predicate).Expr1);
@@ -1960,6 +1964,15 @@ namespace LinqToDB.SqlProvider
 				StringBuilder.Append(" ESCAPE ");
 				BuildExpression(predicate.Escape);
 			}
+		}
+
+		protected virtual void BuildRegexPredicate(SqlPredicate.Regex predicate)
+		{
+			var precedence = GetPrecedence(predicate);
+
+			BuildExpression(precedence, predicate.Expr1);
+			StringBuilder.Append(predicate.IsNot ? " NOT REGEXP " : " REGEXP ");
+			BuildExpression(precedence, predicate.Expr2);
 		}
 
 		#endregion

@@ -200,12 +200,49 @@ namespace LinqToDB.SqlQuery
 				sb.Append(" LIKE ");
 
 				Expr2.ToString(sb, dic);
+			}
+		}
 
-				if (Escape != null)
-				{
-					sb.Append(" ESCAPE ");
-					Escape.ToString(sb, dic);
-				}
+		// string_expression [ NOT ] LIKE string_expression [ ESCAPE 'escape_character' ]
+		//
+		public class Regex : NotExpr
+		{
+			public Regex(ISqlExpression exp1, bool isNot, ISqlExpression exp2)
+				: base(exp1, isNot, SqlQuery.Precedence.Comparison)
+			{
+				Expr2 = exp2;
+			}
+
+			public ISqlExpression Expr2 { get; internal set; }
+
+			protected override void Walk(bool skipColumns, Func<ISqlExpression, ISqlExpression> func)
+			{
+				base.Walk(skipColumns, func);
+				Expr2 = Expr2.Walk(skipColumns, func);
+			}
+
+			protected override ICloneableElement Clone(Dictionary<ICloneableElement, ICloneableElement> objectTree, Predicate<ICloneableElement> doClone)
+			{
+				if (!doClone(this))
+					return this;
+
+				if (!objectTree.TryGetValue(this, out var clone))
+					objectTree.Add(this, clone = new Regex(
+						(ISqlExpression)Expr1.Clone(objectTree, doClone), IsNot, (ISqlExpression)Expr2.Clone(objectTree, doClone)));
+
+				return clone;
+			}
+
+			public override QueryElementType ElementType => QueryElementType.RegexPredicate;
+
+			protected override void ToString(StringBuilder sb, Dictionary<IQueryElement, IQueryElement> dic)
+			{
+				Expr1.ToString(sb, dic);
+
+				if (IsNot) sb.Append(" NOT");
+				sb.Append(" REGEXP ");
+
+				Expr2.ToString(sb, dic);
 			}
 		}
 

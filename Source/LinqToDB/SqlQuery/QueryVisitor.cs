@@ -541,11 +541,10 @@ namespace LinqToDB.SqlQuery
 						break;
 					}
 
-				case QueryElementType.LikePredicate:
+				case QueryElementType.RegexPredicate:
 					{
-						Visit2(((SqlPredicate.Like)element).Expr1);
-						Visit2(((SqlPredicate.Like)element).Expr2);
-						Visit2(((SqlPredicate.Like)element).Escape);
+						Visit2(((SqlPredicate.Regex)element).Expr1);
+						Visit2(((SqlPredicate.Regex)element).Expr2);
 						break;
 					}
 

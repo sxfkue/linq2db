@@ -17,6 +17,7 @@ namespace LinqToDB.SqlQuery
 		NotExprPredicate,
 		ExprExprPredicate,
 		LikePredicate,
+		RegexPredicate,
 		BetweenPredicate,
 		IsNullPredicate,
 		InSubQueryPredicate,

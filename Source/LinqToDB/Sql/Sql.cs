@@ -1092,7 +1092,7 @@ namespace LinqToDB
 		[Sql.Expression(ProviderName.SqlServer, "SQLNET::New('Regex.IsMatch({0}, {1}')", ServerSideOnly = true, IsPredicate = true)] // supported via https://github.com/zzzprojects/Eval-SQL.NET
 		public static bool RegExp(string text, string expression)
 		{
-			throw new LinqException("'RegExp' is only server-side method.");
+			return System.Text.RegularExpressions.Regex.IsMatch(text, expression);
 		}
 
 		#endregion

@@ -6,6 +6,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Text;
+using System.Text.RegularExpressions;
 
 namespace LinqToDB.Linq.Builder
 {
@@ -1387,6 +1388,17 @@ namespace LinqToDB.Linq.Builder
 
 							predicate = ConvertInPredicate(context, expr);
 						}
+						else if (e.Method.DeclaringType == typeof(Regex))
+						{
+							if (e.Method.Name == "IsMatch")
+							{
+								predicate = ConvertIsMatchPredicate(context, e);
+							}
+							else
+							{
+								throw new NotImplementedException("Only IsMatch of Regex is implemented.");
+							}
+						}
 #if !NETSTANDARD1_6 && !NETSTANDARD2_0
 						else if (e.Method == ReflectionHelper.Functions.String.Like11) predicate = ConvertLikePredicate(context, e);
 						else if (e.Method == ReflectionHelper.Functions.String.Like12) predicate = ConvertLikePredicate(context, e);
@@ -2126,6 +2138,19 @@ namespace LinqToDB.Linq.Builder
 			}
 
 			throw new LinqException("'{0}' cannot be converted to SQL.", expression);
+		}
+
+		#endregion
+
+		#region Regex predicate
+
+		ISqlPredicate ConvertIsMatchPredicate(IBuildContext context, MethodCallExpression expression)
+		{
+			var e = expression;
+			var a1 = ConvertToSql(context, e.Arguments[0]);
+			var a2 = ConvertToSql(context, e.Arguments[1]);
+
+			return new SqlPredicate.Regex(a1, false, a2);
 		}
 
 		#endregion
